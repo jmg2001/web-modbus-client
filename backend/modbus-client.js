@@ -59,7 +59,7 @@ async function connectModbus({ ip, port, interval, tags }) {
       for (const tag of tags) {
         try {
           let response;
-          const key = `${tag.type}-${tag.start}`;
+          const key = `${tag.type}`;
           switch (tag.type) {
             case "holdingRegisters":
               response = await client.readHoldingRegisters(
@@ -89,7 +89,7 @@ async function connectModbus({ ip, port, interval, tags }) {
           };
 
           config.memoryStore[key].push(data);
-          broadcast(data);
+          broadcast(config.memoryStore);
         } catch (err) {
           console.error(`Error leyendo ${tag.type} ${tag.start}`, err.message);
         }
