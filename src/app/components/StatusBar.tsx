@@ -2,14 +2,14 @@
 import { useWebSocketStore } from "../stores/useWebSocketStore";
 
 export default function StatusBar() {
-  const webSocketStore = useWebSocketStore((s) => s);
+  const webSocketStoreConnected = useWebSocketStore((s) => s.connected);
   const modbusState = useWebSocketStore((s) => s.modbusState);
 
   return (
     <div className=" p-2 flex justify-between absolute bottom-0 z-50 bg-[#0b0f14] w-full font-bold">
       <div className="flex gap-5">
         <span>MB Status: {modbusState.connected ? "🟢" : "🔴"}</span>
-        <span>WS Status: {webSocketStore.connected ? "🟢" : "🔴"}</span>
+        <span>WS Status: {webSocketStoreConnected ? "🟢" : "🔴"}</span>
       </div>
       <span className=" flex gap-4">
         <p>CURRENT DATA: </p>

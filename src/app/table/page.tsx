@@ -8,12 +8,8 @@ export default function TablePage() {
       return Object.keys(modbusState.data).at(0);
   };
   const startRegister = () => {
-    if (modbusState.registers.at(0))
-      return +modbusState.registers.at(0)["start"];
+    if (modbusState.registers) return +modbusState.registers["start"];
   };
-
-  if (modbusState.registers["Holding"])
-    console.log(modbusState.registers["start"]);
 
   return (
     <section className=" flex  h-full flex-col items-center">

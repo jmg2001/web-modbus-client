@@ -40,6 +40,7 @@ function setSendStatusInterval() {
         ip: config.connection.ip,
         port: config.connection.port,
         registers: config.connection.registers,
+        retentionTime: config.connection.retentionMinutes,
       },
       data: config.memoryStore,
     });
@@ -49,11 +50,34 @@ function setSendStatusInterval() {
 // Registrar el Web Socket
 function registerWebSocketClient(ws) {
   subscribers.push(ws);
+
   ws.on("close", () => {
     console.log("✅ Cliente WebSocket desconectado");
     const i = subscribers.indexOf(ws);
     if (i !== -1) subscribers.splice(i, 1);
   });
+
+  ws.on("message", async (msg) => {
+    try {
+      const text = msg.toString();
+      switch (text) {
+        case "DISCONNECT":
+          closeClient();
+          break;
+        default:
+          const obj = JSON.parse(text);
+          try {
+            await connectModbus(obj);
+          } catch (err) {
+            console.log(err);
+          }
+          break;
+      }
+    } catch (err) {
+      console.error("Error al parsear:", err);
+    }
+  });
+
   if ((subscribers.length > 0) & !sendStatusInterval) {
     if (!config.connected) {
       setSendStatusInterval();
@@ -62,7 +86,7 @@ function registerWebSocketClient(ws) {
 }
 
 // Conectar al server
-async function connectModbus({ ip, port, interval, registers }) {
+async function connectModbus({ ip, port, interval, registers, retentionTime }) {
   if (sendStatusInterval) clearInterval(sendStatusInterval);
   if (config.connected) closeClient();
 
@@ -78,58 +102,68 @@ async function connectModbus({ ip, port, interval, registers }) {
   await client.connectTCP(ip, { port });
   client.setID(1); // Modbus unit ID (ajustable)
 
+  setRetention(retentionTime);
   config.connected = true;
   console.log("✅ Cliente Modbus conectado correctamente");
 
   sendDataInterval = setInterval(async () => {
     if (subscribers.length > 0) {
       const now = Date.now();
-      for (const tag of registers) {
-        try {
-          let response;
-          const key = `${tag.type}`;
-          switch (tag.type) {
-            case "Holding":
-              response = await client.readHoldingRegisters(
-                tag.start,
-                tag.length
-              );
-              break;
-            case "Input":
-              response = await client.readInputRegisters(tag.start, tag.length);
-              break;
-            case "Coils":
-              response = await client.readCoils(tag.start, tag.length);
-              break;
-            case "discreteInputs":
-              response = await client.readDiscreteInputs(tag.start, tag.length);
-              break;
-            default:
-              continue;
-          }
-
-          if (!config.memoryStore[key]) config.memoryStore[key] = [];
-
-          data = {
-            values: response.data,
-            timestamp: now,
-          };
-
-          config.memoryStore[key].push(data);
-        } catch (err) {
-          console.error(`Error leyendo ${tag.type} ${tag.start}`, err.message);
+      try {
+        let response;
+        const key = registers.type;
+        switch (registers.type) {
+          case "Holding":
+            response = await client.readHoldingRegisters(
+              registers.start,
+              registers.length
+            );
+            break;
+          case "Input":
+            response = await client.readInputRegisters(
+              registers.start,
+              registers.length
+            );
+            break;
+          case "Coils":
+            response = await client.readCoils(
+              registers.start,
+              registers.length
+            );
+            break;
+          case "discreteInputs":
+            response = await client.readDiscreteInputs(
+              registers.start,
+              registers.length
+            );
+            break;
+          default:
+            console.log("Invalid Register Type");
+            break;
         }
-        cleanOldData();
-        broadcast({
-          state: {
-            connected: config.connected,
-            ip: config.connection.ip,
-            port: config.connection.port,
-            registers: config.connection.registers,
-          },
-          data: config.memoryStore,
-        });
+
+        if (!config.memoryStore[key]) config.memoryStore[key] = [];
+
+        data = {
+          values: response.data,
+          timestamp: now,
+        };
+
+        config.memoryStore[key].push(data);
+      } catch (err) {
+        console.error(`Error leyendo ${tag.type} ${tag.start}`, err.message);
       }
+      cleanOldData();
+
+      broadcast({
+        state: {
+          connected: config.connected,
+          ip: config.connection.ip,
+          port: config.connection.port,
+          registers: config.connection.registers,
+        },
+        data: config.memoryStore,
+      });
     }
   }, interval);
 }
@@ -153,8 +187,5 @@ async function closeClient() {
 }
 
 module.exports = {
-  connectModbus,
-  setRetention,
   registerWebSocketClient,
-  closeClient,
 };

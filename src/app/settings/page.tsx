@@ -29,8 +29,8 @@ export default function Page() {
       ip,
       port: Number(port),
       interval: Number(interval),
-      retentionMinutes: Number(retention),
-      registers: [registers],
+      retentionTime: Number(retention),
+      registers: registers,
     };
     connectModbus(payload);
   };
