@@ -1,14 +1,22 @@
 "use client";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHome, faGear, faChartArea } from "@fortawesome/free-solid-svg-icons";
+import {
+  faHome,
+  faGear,
+  faChartArea,
+  faTable,
+  faClipboard,
+} from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/", label: "Home", icon: faHome },
   { href: "/charts", label: "Charts", icon: faChartArea },
+  { href: "/table", label: "Table", icon: faTable },
   { href: "/settings", label: "Settings", icon: faGear },
+  { href: "/logs", label: "Logs", icon: faClipboard },
 ];
 
 export default function Sidebar() {
