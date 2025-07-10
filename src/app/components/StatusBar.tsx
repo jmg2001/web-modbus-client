@@ -8,22 +8,22 @@ export default function StatusBar() {
   return (
     <div className=" p-2 flex justify-between absolute bottom-0 z-50 bg-[#0b0f14] w-full font-bold">
       <div className="flex gap-5">
-        <span>MB Status: {modbusState.connected ? "🟢" : "🔴"}</span>
         <span>WS Status: {webSocketStoreConnected ? "🟢" : "🔴"}</span>
+        <span>MB Status: {modbusState.connected ? "🟢" : "🔴"}</span>
+        <span>IP: {modbusState.ip ? modbusState.ip : "na"}</span>
+        <span>Port: {modbusState.port ? modbusState.port : "na"}</span>
       </div>
       <span className=" flex gap-4">
-        <p>CURRENT DATA: </p>
-        <p>
-          HR:{" "}
-          {modbusState.data["Holding"] ? modbusState.data["Holding"].length : 0}
-        </p>
-        <p>
-          IR: {modbusState.data["Input"] ? modbusState.data["Input"].length : 0}
-        </p>
-        <p>
-          COILS:{" "}
-          {modbusState.data["Coils"] ? modbusState.data["Coils"].length : 0}
-        </p>
+        <p>Data Length: </p>
+        {modbusState.data["Holding"] && (
+          <p>HR - {modbusState.data["Holding"].length}</p>
+        )}
+        {modbusState.data["Input"] && (
+          <p>IR - {modbusState.data["Input"].length}</p>
+        )}
+        {modbusState.data["Coils"] && (
+          <p>Coils - {modbusState.data["Coils"].length}</p>
+        )}
       </span>
     </div>
   );

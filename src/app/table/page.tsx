@@ -14,40 +14,33 @@ export default function TablePage() {
   return (
     <section className=" flex  h-full flex-col items-center">
       <h1 className="text-4xl font-bold mb-10">Table</h1>
-      <h2 className=" mb-10 text-3xl font-bold">{typeRegister()} Registers:</h2>
+
+      <div className=" flex items-center gap-4 mb-10">
+        <h2 className=" text-3xl font-bold">{typeRegister()} Registers - </h2>
+        <h3 className="text-2xl">Example: </h3>
+        <div className=" gap-3 w-fit text-lg flex p-2 bg-[#243347] border-2 border-[#4d6889] rounded-lg justify-between items-center">
+          <h3 className="font-bold text-gray-900 whitespace-nowrap dark:text-white text-center">
+            # Reg
+          </h3>
+          <p>|</p>
+          <h4>Value</h4>
+        </div>
+      </div>
       {Object.keys(modbusState.data).length > 0 ? (
-        <div className="relative overflow-x-auto rounded-lg min-w-lg max-h-[50vh]">
-          <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-            <thead className="  text-lg text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-center">
-                  Register #
-                </th>
-                <th scope="col" className="px-6 py-3 text-center">
-                  Value
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {modbusState.data[typeRegister()] &&
-                modbusState.data[typeRegister()]
-                  .at(-1)
-                  .values.map((value, i) => (
-                    <tr
-                      key={i}
-                      className="text-lg bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200"
-                    >
-                      <th
-                        scope="row"
-                        className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center"
-                      >
-                        {i + startRegister()}
-                      </th>
-                      <td className="px-6 py-4 text-center">{value}</td>
-                    </tr>
-                  ))}
-            </tbody>
-          </table>
+        <div className=" w-full grid grid-cols-10 gap-2">
+          {modbusState.data[typeRegister()] &&
+            modbusState.data[typeRegister()].at(-1).values.map((value, i) => (
+              <div
+                key={i}
+                className="gap-3 text-lg flex p-2 bg-[#243347] border-2 border-[#4d6889] rounded-lg justify-between items-center"
+              >
+                <h3 className="font-bold text-gray-900 whitespace-nowrap dark:text-white text-center">
+                  {i + startRegister()}
+                </h3>
+                <p>|</p>
+                <h4 className="">{value}</h4>
+              </div>
+            ))}
         </div>
       ) : (
         <h1>Waiting for Data</h1>

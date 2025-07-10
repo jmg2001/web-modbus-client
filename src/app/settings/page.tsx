@@ -17,7 +17,7 @@ export default function Page() {
   const [ip, setIp] = useState("localhost");
   const [port, setPort] = useState(502);
   const [interval, setInterval] = useState(1000);
-  const [retention, setRetention] = useState(15); // en minutos
+  const [retention, setRetention] = useState(1); // en minutos
   const [registers, setResgisters] = useState<RegisterParams>(initRegister);
 
   const modbusConnected = useWebSocketStore((s) => s.modbusState.connected);
@@ -51,7 +51,12 @@ export default function Page() {
         Modbus Configuration
       </h1>
       <div className="">
-        <form className="text-xl flex flex-col gap-4 w-xl items-left" action="">
+        <form
+          className={`text-xl flex flex-col gap-4 w-xl items-left ${
+            modbusConnected ? "pointer-events-none opacity-50" : ""
+          }`}
+          action=""
+        >
           <div className="flex items-center justify-between">
             <label htmlFor="ip">IP Address:</label>
             <div className="flex gap-2 items-center">
@@ -82,7 +87,7 @@ export default function Page() {
             />
           </div>
           <div className="flex justify-between items-center">
-            <label htmlFor="">Retention Time</label>
+            <label htmlFor="">Retention Time:</label>
             <select
               className="p-2 border-2 border-[#4d6889] bg-[#243347] rounded-lg text-center"
               value={retention}
@@ -133,7 +138,11 @@ export default function Page() {
 
         <button
           onClick={modbusConnected ? handleDisconnect : handleConnect}
-          className="w-full bg-[#243347] text-white py-2 rounded hover:bg-[#1b2129] mt-4 transition-colors ease-in font-bold uppercase"
+          className={`w-full ${
+            modbusConnected
+              ? "bg-red-700 hover:bg-red-700/70"
+              : "bg-lime-700 hover:bg-lime-700/70"
+          } text-white py-2 rounded mt-4 transition-colors ease-in font-bold uppercase`}
         >
           {modbusConnected ? "Disconnect" : "Connect"}
         </button>
