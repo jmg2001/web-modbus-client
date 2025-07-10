@@ -71,8 +71,8 @@ async function connectModbus({ ip, port, interval, registers }) {
     port,
     interval,
     registers,
-    retentionMinutes: config.connection.retentionMinutes,
   };
+
   config.memoryStore = {};
 
   await client.connectTCP(ip, { port });
@@ -80,7 +80,6 @@ async function connectModbus({ ip, port, interval, registers }) {
 
   config.connected = true;
   console.log("✅ Cliente Modbus conectado correctamente");
-  console.log(registers);
 
   sendDataInterval = setInterval(async () => {
     if (subscribers.length > 0) {
@@ -112,16 +111,15 @@ async function connectModbus({ ip, port, interval, registers }) {
           if (!config.memoryStore[key]) config.memoryStore[key] = [];
 
           data = {
-            key,
             values: response.data,
             timestamp: now,
           };
 
-          cleanOldData();
           config.memoryStore[key].push(data);
         } catch (err) {
           console.error(`Error leyendo ${tag.type} ${tag.start}`, err.message);
         }
+        cleanOldData();
         broadcast({
           state: {
             connected: config.connected,
@@ -139,9 +137,9 @@ async function connectModbus({ ip, port, interval, registers }) {
 // Cerrar la conexión al server modbus
 async function closeClient() {
   if (sendDataInterval) clearInterval(sendDataInterval);
-
   try {
     await client.close();
+
     config.connected = false;
     clearInterval(sendStatusInterval);
     setSendStatusInterval();
@@ -159,5 +157,4 @@ module.exports = {
   setRetention,
   registerWebSocketClient,
   closeClient,
-  getMemoryStore: () => config.memoryStore,
 };

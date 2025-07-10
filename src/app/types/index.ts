@@ -3,6 +3,17 @@ export type ModbusStatus = {
   ip: string;
   port: number;
   registers: [];
+  connect: (payload: PayloadConnection) => string;
+  disconnect: () => boolean;
+  data: object;
+};
+
+type PayloadConnection = {
+  ip: string;
+  port: number;
+  interval: number;
+  retentionMinutes: number;
+  registers: RegisterParams[];
 };
 
 export type RegisterParams = {

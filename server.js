@@ -9,16 +9,16 @@ const { initWebSocketServer } = require("./backend/ws-server");
 const cors = require("cors");
 
 const expressApp = express();
-expressApp.use(express.json());
 expressApp.use(cors());
+expressApp.use(express.json());
 
 // POST Connect Modbus Server
 expressApp.post("/api/connect-modbus", async (req, res) => {
   const { ip, port, interval, registers, retentionMinutes } = req.body;
-  console.log(req.body);
   try {
     await connectModbus({ ip, port, interval, registers });
     setRetention(retentionMinutes || 5);
+
     res.status(200).json({ success: true });
   } catch (err) {
     console.error("Error Modbus:", err);

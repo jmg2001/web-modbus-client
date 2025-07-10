@@ -1,3 +1,6 @@
+"use client";
+import Chart from "../components/Chart";
+
 export default function Page() {
-  return <div>Charts</div>;
+  return <Chart />;
 }

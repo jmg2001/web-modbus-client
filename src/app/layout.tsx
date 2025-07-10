@@ -5,8 +5,9 @@ import "./globals.css";
 import "../lib/fontawesome"; // importa la configuración
 import Sidebar from "./components/Sidebar";
 import StatusBar from "./components/StatusBar";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useWebSocketStore } from "./stores/useWebSocketStore";
+import { useModbusStore } from "./stores/useModbusStore";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,12 +27,7 @@ export default function RootLayout({
   const connectSocket = useWebSocketStore((s) => s.connect);
   useEffect(() => {
     connectSocket();
-  }, []);
-
-  // const dataSocket = useWebSocketStore((s) => s.data);
-  // useMemo(() => {
-  //   //console.log(dataSocket);
-  // }, [dataSocket]);
+  });
 
   return (
     <html lang="en">

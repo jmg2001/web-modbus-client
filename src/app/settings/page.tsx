@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useModbusStore } from "../stores/useModbusStore";
+
 import type { RegisterParams } from "../types";
+import { useWebSocketStore } from "../stores/useWebSocketStore";
 
 export default function Page() {
   const initRegister: RegisterParams = {
@@ -19,9 +20,9 @@ export default function Page() {
   const [retention, setRetention] = useState(15); // en minutos
   const [registers, setResgisters] = useState<RegisterParams>(initRegister);
 
-  const modbusConnected = useModbusStore((s) => s.connected);
-  const connectModbus = useModbusStore((s) => s.connect);
-  const disconnectModbus = useModbusStore((s) => s.disconnect);
+  const modbusConnected = useWebSocketStore((s) => s.modbusState.connected);
+  const connectModbus = useWebSocketStore((s) => s.modbusState.connect);
+  const disconnectModbus = useWebSocketStore((s) => s.modbusState.disconnect);
 
   const handleConnect = async () => {
     const payload = {
@@ -87,41 +88,16 @@ export default function Page() {
               value={retention}
               onChange={(e) => setRetention(Number(e.target.value))}
             >
-              <option value={1}>1 minuto</option>
-              <option value={5}>5 minutos</option>
-              <option value={15}>15 minutos</option>
-              <option value={30}>30 minutos</option>
-              <option value={60}>1 hora</option>
+              <option value={1}>1 min</option>
+              <option value={5}>5 min</option>
+              <option value={15}>15 min</option>
+              <option value={30}>30 min</option>
+              <option value={60}>60 min</option>
             </select>
           </div>
           <div>
             <h1 className="text-center">Registers</h1>
           </div>
-          {/* {registers.map((register, i) => (
-            <div
-              key={register.type}
-              className="flex justify-between items-center"
-            >
-              <h3>{register.type.split("R")[0]}</h3>
-              <div className=" flex gap-3 items-center">
-                Start:
-                <input
-                  type="number"
-                  className="max-w-20 p-2 border-2 border-[#4d6889] bg-[#243347] rounded-lg text-center"
-                  value={register.start}
-                  onChange={(e) => changeRegister(e.target.value, i, "start")}
-                />
-                Quantity:
-                <input
-                  type="number"
-                  className="max-w-20 p-2 border-2 border-[#4d6889] bg-[#243347] rounded-lg text-center"
-                  value={register.length}
-                  onChange={(e) => changeRegister(e.target.value, i, "length")}
-                />
-              </div>
-            </div>
-          ))} */}
-
           <div className=" flex items-center justify-between">
             <select
               name=""
