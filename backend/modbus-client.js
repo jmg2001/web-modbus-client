@@ -4,18 +4,23 @@ const config = require("./config");
 const client = new ModbusRTU();
 const subscribers = [];
 
-let intervalId = null;
+let sendDataInterval = null;
+let sendStatusInterval = null;
+let data = {};
 
+// SET el intervalo de limpieza de datos
 function setRetention(minutes) {
   config.connection.retentionMinutes = minutes;
 }
 
+// Enviar ingformacion a todos los sockets
 function broadcast(payload) {
   subscribers.forEach((ws) => {
     if (ws.readyState === 1) ws.send(JSON.stringify(payload));
   });
 }
 
+// Limpiar datos fuera del intervalo
 function cleanOldData() {
   const now = Date.now();
   const maxAge = config.connection.retentionMinutes * 60 * 1000;
@@ -26,6 +31,22 @@ function cleanOldData() {
   }
 }
 
+// SET Interval para enviar Status del Cliente Modbus
+function setSendStatusInterval() {
+  sendStatusInterval = setInterval(() => {
+    broadcast({
+      state: {
+        connected: config.connected,
+        ip: config.connection.ip,
+        port: config.connection.port,
+        registers: config.connection.registers,
+      },
+      data: config.memoryStore,
+    });
+  }, 1500);
+}
+
+// Registrar el Web Socket
 function registerWebSocketClient(ws) {
   subscribers.push(ws);
   ws.on("close", () => {
@@ -33,16 +54,23 @@ function registerWebSocketClient(ws) {
     const i = subscribers.indexOf(ws);
     if (i !== -1) subscribers.splice(i, 1);
   });
+  if ((subscribers.length > 0) & !sendStatusInterval) {
+    if (!config.connected) {
+      setSendStatusInterval();
+    }
+  }
 }
 
-async function connectModbus({ ip, port, interval, tags }) {
+// Conectar al server
+async function connectModbus({ ip, port, interval, registers }) {
+  if (sendStatusInterval) clearInterval(sendStatusInterval);
   if (config.connected) closeClient();
 
   config.connection = {
     ip,
     port,
     interval,
-    tags,
+    registers,
     retentionMinutes: config.connection.retentionMinutes,
   };
   config.memoryStore = {};
@@ -52,25 +80,26 @@ async function connectModbus({ ip, port, interval, tags }) {
 
   config.connected = true;
   console.log("✅ Cliente Modbus conectado correctamente");
+  console.log(registers);
 
-  intervalId = setInterval(async () => {
+  sendDataInterval = setInterval(async () => {
     if (subscribers.length > 0) {
       const now = Date.now();
-      for (const tag of tags) {
+      for (const tag of registers) {
         try {
           let response;
           const key = `${tag.type}`;
           switch (tag.type) {
-            case "holdingRegisters":
+            case "Holding":
               response = await client.readHoldingRegisters(
                 tag.start,
                 tag.length
               );
               break;
-            case "inputRegisters":
+            case "Input":
               response = await client.readInputRegisters(tag.start, tag.length);
               break;
-            case "coils":
+            case "Coils":
               response = await client.readCoils(tag.start, tag.length);
               break;
             case "discreteInputs":
@@ -82,28 +111,43 @@ async function connectModbus({ ip, port, interval, tags }) {
 
           if (!config.memoryStore[key]) config.memoryStore[key] = [];
 
-          const data = {
+          data = {
             key,
             values: response.data,
             timestamp: now,
           };
 
+          cleanOldData();
           config.memoryStore[key].push(data);
-          broadcast(config.memoryStore);
         } catch (err) {
           console.error(`Error leyendo ${tag.type} ${tag.start}`, err.message);
         }
+        broadcast({
+          state: {
+            connected: config.connected,
+            ip: config.connection.ip,
+            port: config.connection.port,
+            registers: config.connection.registers,
+          },
+          data: config.memoryStore,
+        });
       }
     }
   }, interval);
 }
 
-// 🔌 Cerrar conexión correctamente
+// Cerrar la conexión al server modbus
 async function closeClient() {
-  if (intervalId) clearInterval(intervalId);
+  if (sendDataInterval) clearInterval(sendDataInterval);
 
   try {
-    await client.close(); // esto cierra el socket TCP
+    await client.close();
+    config.connected = false;
+    clearInterval(sendStatusInterval);
+    setSendStatusInterval();
+
+    config.memoryStore = {};
+
     console.log("✅ Cliente Modbus cerrado correctamente");
   } catch (err) {
     console.error("⚠️ Error al cerrar cliente:", err.message);
@@ -114,7 +158,6 @@ module.exports = {
   connectModbus,
   setRetention,
   registerWebSocketClient,
-  cleanOldData,
   closeClient,
   getMemoryStore: () => config.memoryStore,
 };

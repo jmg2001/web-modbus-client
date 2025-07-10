@@ -7,10 +7,10 @@ type PayloadConnection = {
   port: number;
   interval: number;
   retentionMinutes: number;
-  tags: ModbusTag[];
+  registers: ModbusRegister[];
 };
 
-type ModbusTag = {
+type ModbusRegister = {
   type: string;
   start: number;
   length: number;
@@ -18,18 +18,17 @@ type ModbusTag = {
 
 type ModbusState = {
   connected: boolean;
-  tags: ModbusTag[];
-  setTags: (tags: ModbusTag[]) => void;
-  connect: (tags: ModbusTag[], payload: PayloadConnection) => boolean;
+  registers: ModbusRegister[];
+  setRegisters: (tags: ModbusRegister[]) => void;
+  connect: (payload: PayloadConnection) => string;
   disconnect: () => boolean;
-  checkConnection: () => boolean;
 };
 
 export const useModbusStore = create<ModbusState>((set) => ({
   connected: false,
   tags: [],
-  setTags: (tags) => set({ tags }),
-  connect: async (tags, payload) => {
+  setRegisters: (registers) => set({ registers }),
+  connect: async (payload) => {
     try {
       const res = await fetch("http://localhost:3001/api/connect-modbus", {
         method: "POST",
@@ -40,16 +39,16 @@ export const useModbusStore = create<ModbusState>((set) => ({
       if (res.ok) {
         console.log("✅ Conexión exitosa");
         set({ connected: true });
-        return true;
+        return res.text;
       } else {
         const err = await res.json();
         set({ connected: false });
         console.error("❌ Error:", err);
-        return false;
+        return err.error;
       }
     } catch (error) {
       console.error("🚨 Error al conectar:", error);
-      return false;
+      return error;
     }
   },
   disconnect: async () => {
@@ -69,26 +68,6 @@ export const useModbusStore = create<ModbusState>((set) => ({
       }
     } catch (error) {
       console.error("🚨 Error al desconectar:", error);
-      return false;
-    }
-  },
-  checkConnection: async () => {
-    try {
-      const res = await fetch("http://localhost:3001/api/status-modbus", {
-        method: "POST",
-      });
-      console.log(res);
-      // if (res.ok) {
-      //   set({ connected: true });
-      //   return true;
-      // } else {
-      //   set({ connected: false });
-      //   const err = await res.json();
-      //   console.error("❌ Error:", err);
-      //   return false;
-      // }
-    } catch (error) {
-      console.error("🚨 Error:", error);
       return false;
     }
   },

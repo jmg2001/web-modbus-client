@@ -4,7 +4,7 @@ module.exports = {
     port: 502,
     interval: 1000,
     retentionMinutes: 5,
-    tags: [], // { type: 'holdingRegisters', start: 0, length: 2 }
+    registers: [], // { type: 'holdingRegisters', start: 0, length: 2 }
   },
   memoryStore: {}, // { "holdingRegisters-0": [ { value, timestamp }, ... ] }
   connected: false,

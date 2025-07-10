@@ -2,41 +2,46 @@
 
 import { useState } from "react";
 import { useModbusStore } from "../stores/useModbusStore";
+import type { RegisterParams } from "../types";
 
 export default function Page() {
+  const initRegister: RegisterParams = {
+    type: "Holding",
+    length: 5,
+    start: 0,
+  };
+
+  const registerTypes = ["Holding", "Input", "Coils"];
+
   const [ip, setIp] = useState("localhost");
   const [port, setPort] = useState(502);
   const [interval, setInterval] = useState(1000);
   const [retention, setRetention] = useState(15); // en minutos
-  const [tags, setTags] = useState("holdingRegisters:0:20");
+  const [registers, setResgisters] = useState<RegisterParams>(initRegister);
 
   const modbusConnected = useModbusStore((s) => s.connected);
   const connectModbus = useModbusStore((s) => s.connect);
   const disconnectModbus = useModbusStore((s) => s.disconnect);
 
   const handleConnect = async () => {
-    const parsedTags = tags.split(",").map((tag) => {
-      const [type, start, length] = tag.split(":");
-      return {
-        type,
-        start: Number(start),
-        length: Number(length),
-      };
-    });
-
     const payload = {
       ip,
       port: Number(port),
       interval: Number(interval),
       retentionMinutes: Number(retention),
-      tags: parsedTags,
+      registers: [registers],
     };
-
-    connectModbus(parsedTags, payload);
+    connectModbus(payload);
   };
 
   const handleDisconnect = async () => {
     disconnectModbus();
+  };
+
+  const changeRegister = (value, param) => {
+    const updatedRegisters = { ...registers };
+    updatedRegisters[param] = value;
+    setResgisters(updatedRegisters);
   };
 
   return (
@@ -89,14 +94,64 @@ export default function Page() {
               <option value={60}>1 hora</option>
             </select>
           </div>
-          <div className="flex justify-between items-center ">
-            <label htmlFor="">Tags:</label>
-            <input
+          <div>
+            <h1 className="text-center">Registers</h1>
+          </div>
+          {/* {registers.map((register, i) => (
+            <div
+              key={register.type}
+              className="flex justify-between items-center"
+            >
+              <h3>{register.type.split("R")[0]}</h3>
+              <div className=" flex gap-3 items-center">
+                Start:
+                <input
+                  type="number"
+                  className="max-w-20 p-2 border-2 border-[#4d6889] bg-[#243347] rounded-lg text-center"
+                  value={register.start}
+                  onChange={(e) => changeRegister(e.target.value, i, "start")}
+                />
+                Quantity:
+                <input
+                  type="number"
+                  className="max-w-20 p-2 border-2 border-[#4d6889] bg-[#243347] rounded-lg text-center"
+                  value={register.length}
+                  onChange={(e) => changeRegister(e.target.value, i, "length")}
+                />
+              </div>
+            </div>
+          ))} */}
+
+          <div className=" flex items-center justify-between">
+            <select
+              name=""
+              value={registers.type}
               className="p-2 border-2 border-[#4d6889] bg-[#243347] rounded-lg text-center"
-              placeholder="Tags (ej: holdingRegisters:0:20)"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-            />
+              onChange={(e) => changeRegister(e.target.value, "type")}
+            >
+              {registerTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+
+            <div className="flex gap-3 items-center">
+              Start:{" "}
+              <input
+                type="number"
+                value={registers.start}
+                className="max-w-15 p-2 border-2 border-[#4d6889] bg-[#243347] rounded-lg text-center"
+                onChange={(e) => changeRegister(e.target.value, "start")}
+              />
+              Length:{" "}
+              <input
+                type="number"
+                value={registers.length}
+                className="max-w-15 p-2 border-2 border-[#4d6889] bg-[#243347] rounded-lg text-center"
+                onChange={(e) => changeRegister(e.target.value, "length")}
+              />
+            </div>
           </div>
         </form>
 
