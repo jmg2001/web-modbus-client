@@ -1,12 +1,13 @@
 // stores/useModbusStore.ts
 import { create } from "zustand";
-import type { ModbusStatus } from "../types";
+import type { ModbusStatus, PayloadConnection } from "../types";
 
 interface WebSocketState {
   socket: WebSocket | null;
   connected: boolean;
   connect: () => void;
   disconnect: () => void;
+  cleanData: () => void;
   modbusState: ModbusStatus | null;
 }
 
@@ -29,10 +30,12 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
     ws.onmessage = (e) => {
       const prevModbusState = get().modbusState;
       const msg = JSON.parse(e.data);
-      console.log(msg);
-
       set(() => ({
-        modbusState: { ...prevModbusState, ...msg.state, data: msg.data },
+        modbusState: {
+          ...prevModbusState,
+          ...msg.state,
+          data: [...get().modbusState.data, ...msg.data],
+        },
       }));
     };
 
@@ -45,19 +48,34 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
     set({ socket: ws });
   },
   disconnect: () => {
-    const socket = useWebSocketStore.getState().socket;
+    const socket = get().socket;
     if (socket) {
       socket.close();
     }
     set({ socket: null });
   },
+  cleanData: () => {
+    // Limpiar datos fuera del intervalo
+    const prevModbusState = get().modbusState;
+    const now = Date.now();
+    const maxAge = 1 * 60 * 1000;
+    set({
+      modbusState: {
+        ...prevModbusState,
+        data: get().modbusState.data.filter(
+          (entry) => now - entry.timestamp <= maxAge
+        ),
+      },
+    });
+  },
   modbusState: {
     connected: false,
-    data: {},
+    data: [],
     port: 502,
     ip: null,
-    registers: [],
-    connect: (payload) => {
+    interval: 1000,
+    registers: { length: 0, start: 0, type: "Holding" },
+    connect: (payload: PayloadConnection) => {
       try {
         get().socket.send(JSON.stringify(payload));
       } catch (error) {

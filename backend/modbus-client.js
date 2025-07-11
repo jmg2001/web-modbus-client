@@ -8,11 +8,6 @@ let sendDataInterval = null;
 let sendStatusInterval = null;
 let data = {};
 
-// SET el intervalo de limpieza de datos
-function setRetention(minutes) {
-  config.connection.retentionMinutes = minutes;
-}
-
 // Enviar ingformacion a todos los sockets
 function broadcast(payload) {
   subscribers.forEach((ws) => {
@@ -20,28 +15,11 @@ function broadcast(payload) {
   });
 }
 
-// Limpiar datos fuera del intervalo
-function cleanOldData() {
-  const now = Date.now();
-  const maxAge = config.connection.retentionMinutes * 60 * 1000;
-  for (const key in config.memoryStore) {
-    config.memoryStore[key] = config.memoryStore[key].filter(
-      (entry) => now - entry.timestamp <= maxAge
-    );
-  }
-}
-
 // SET Interval para enviar Status del Cliente Modbus
 function setSendStatusInterval() {
   sendStatusInterval = setInterval(() => {
     broadcast({
-      state: {
-        connected: config.connected,
-        ip: config.connection.ip,
-        port: config.connection.port,
-        registers: config.connection.registers,
-        retentionTime: config.connection.retentionMinutes,
-      },
+      state: config.connection,
       data: config.memoryStore,
     });
   }, 1500);
@@ -86,9 +64,9 @@ function registerWebSocketClient(ws) {
 }
 
 // Conectar al server
-async function connectModbus({ ip, port, interval, registers, retentionTime }) {
+async function connectModbus({ ip, port, interval, registers }) {
   if (sendStatusInterval) clearInterval(sendStatusInterval);
-  if (config.connected) closeClient();
+  if (config.connection.connected) closeClient();
 
   config.connection = {
     ip,
@@ -102,8 +80,7 @@ async function connectModbus({ ip, port, interval, registers, retentionTime }) {
   await client.connectTCP(ip, { port });
   client.setID(1); // Modbus unit ID (ajustable)
 
-  setRetention(retentionTime);
-  config.connected = true;
+  config.connection.connected = true;
   console.log("✅ Cliente Modbus conectado correctamente");
 
   sendDataInterval = setInterval(async () => {
@@ -111,7 +88,6 @@ async function connectModbus({ ip, port, interval, registers, retentionTime }) {
       const now = Date.now();
       try {
         let response;
-        const key = registers.type;
         switch (registers.type) {
           case "Holding":
             response = await client.readHoldingRegisters(
@@ -142,26 +118,22 @@ async function connectModbus({ ip, port, interval, registers, retentionTime }) {
             break;
         }
 
-        if (!config.memoryStore[key]) config.memoryStore[key] = [];
+        // if (!config.memoryStore[key]) config.memoryStore[key] = [];
+
+        config.memoryStore = [];
 
         data = {
           values: response.data,
           timestamp: now,
         };
 
-        config.memoryStore[key].push(data);
+        config.memoryStore.push(data);
       } catch (err) {
         console.error(`Error leyendo ${tag.type} ${tag.start}`, err.message);
       }
-      cleanOldData();
 
       broadcast({
-        state: {
-          connected: config.connected,
-          ip: config.connection.ip,
-          port: config.connection.port,
-          registers: config.connection.registers,
-        },
+        state: config.connection,
         data: config.memoryStore,
       });
     }
@@ -174,7 +146,7 @@ async function closeClient() {
   try {
     await client.close();
 
-    config.connected = false;
+    config.connection.connected = false;
     clearInterval(sendStatusInterval);
     setSendStatusInterval();
 

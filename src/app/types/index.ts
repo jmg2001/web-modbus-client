@@ -1,28 +1,36 @@
+export type ModbusRegistersTypes = "Holding" | "Input" | "Coils";
+
+export type ModbusData = {
+  values: number[];
+  timestamp: number;
+};
+
+export const MODBUS_REGISTER_TYPES: ModbusRegistersTypes[] = [
+  "Holding",
+  "Input",
+  "Coils",
+];
+
 export type ModbusStatus = {
   connected: boolean;
   ip: string;
   port: number;
   registers: RegisterParams;
+  interval: number;
+  data: ModbusData[];
   connect: (payload: PayloadConnection) => string;
   disconnect: () => boolean;
-  data: object;
 };
 
-type PayloadConnection = {
+export type PayloadConnection = {
   ip: string;
   port: number;
   interval: number;
-  retentionTime: number;
   registers: RegisterParams;
 };
 
 export type RegisterParams = {
-  type: string;
+  type: ModbusRegistersTypes;
   start: number;
   length: number;
 };
-
-// connected: config.connected,
-// ip: config.connection.ip,
-// port: config.connection.port,
-// register: config.connection.tags,

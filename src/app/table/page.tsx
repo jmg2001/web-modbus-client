@@ -27,15 +27,15 @@ export default function TablePage() {
         </div>
       </div>
       {Object.keys(modbusState.data).length > 0 ? (
-        <div className=" w-full grid grid-cols-10 gap-2">
-          {modbusState.data[typeRegister()] &&
-            modbusState.data[typeRegister()].at(-1).values.map((value, i) => (
+        <div className=" grid gap-2 grid-flow-col grid-rows-6 auto-cols-fr  place-items-center">
+          {modbusState.data.at(-1) &&
+            modbusState.data.at(-1).values.map((value, i) => (
               <div
                 key={i}
-                className="gap-3 text-lg flex p-2 bg-[#243347] border-2 border-[#4d6889] rounded-lg justify-between items-center"
+                className=" gap-3 text-lg flex p-2 bg-[#243347] border-2 border-[#4d6889] rounded-lg justify-between items-center"
               >
                 <h3 className="font-bold text-gray-900 whitespace-nowrap dark:text-white text-center">
-                  {i + startRegister()}
+                  {(i + startRegister()).toString().padStart(4, "0")}
                 </h3>
                 <p>|</p>
                 <h4 className="">{value}</h4>

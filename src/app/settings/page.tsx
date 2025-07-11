@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
-
-import type { RegisterParams } from "../types";
+import {
+  type RegisterParams,
+  type PayloadConnection,
+  MODBUS_REGISTER_TYPES,
+} from "../types";
 import { useWebSocketStore } from "../stores/useWebSocketStore";
 
 export default function Page() {
@@ -12,24 +15,22 @@ export default function Page() {
     start: 0,
   };
 
-  const registerTypes = ["Holding", "Input", "Coils"];
-
   const [ip, setIp] = useState("localhost");
   const [port, setPort] = useState(502);
   const [interval, setInterval] = useState(1000);
   const [retention, setRetention] = useState(1); // en minutos
-  const [registers, setResgisters] = useState<RegisterParams>(initRegister);
+
+  const [registers, setRegisters] = useState<RegisterParams>(initRegister);
 
   const modbusConnected = useWebSocketStore((s) => s.modbusState.connected);
   const connectModbus = useWebSocketStore((s) => s.modbusState.connect);
   const disconnectModbus = useWebSocketStore((s) => s.modbusState.disconnect);
 
   const handleConnect = async () => {
-    const payload = {
+    const payload: PayloadConnection = {
       ip,
       port: Number(port),
       interval: Number(interval),
-      retentionTime: Number(retention),
       registers: registers,
     };
     connectModbus(payload);
@@ -42,7 +43,7 @@ export default function Page() {
   const changeRegister = (value, param) => {
     const updatedRegisters = { ...registers };
     updatedRegisters[param] = value;
-    setResgisters(updatedRegisters);
+    setRegisters(updatedRegisters);
   };
 
   return (
@@ -110,7 +111,7 @@ export default function Page() {
               className="p-2 border-2 border-[#4d6889] bg-[#243347] rounded-lg text-center"
               onChange={(e) => changeRegister(e.target.value, "type")}
             >
-              {registerTypes.map((type) => (
+              {MODBUS_REGISTER_TYPES.map((type) => (
                 <option key={type} value={type}>
                   {type}
                 </option>

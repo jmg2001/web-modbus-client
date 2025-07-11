@@ -15,15 +15,7 @@ export default function StatusBar() {
       </div>
       <span className=" flex gap-4">
         <p>Data Length: </p>
-        {modbusState.data["Holding"] && (
-          <p>HR - {modbusState.data["Holding"].length}</p>
-        )}
-        {modbusState.data["Input"] && (
-          <p>IR - {modbusState.data["Input"].length}</p>
-        )}
-        {modbusState.data["Coils"] && (
-          <p>Coils - {modbusState.data["Coils"].length}</p>
-        )}
+        {modbusState.data && <p>{modbusState.data.length}</p>}
       </span>
     </div>
   );
