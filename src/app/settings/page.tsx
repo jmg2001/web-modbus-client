@@ -5,6 +5,7 @@ import {
   type RegisterParams,
   type PayloadConnection,
   MODBUS_REGISTER_TYPES,
+  POLLING_TIMES,
 } from "../types";
 import { useWebSocketStore } from "../stores/useWebSocketStore";
 
@@ -99,11 +100,11 @@ export default function Page() {
               value={retention}
               onChange={(e) => setRetention(Number(e.target.value))}
             >
-              <option value={1}>1 min</option>
-              <option value={5}>5 min</option>
-              <option value={15}>15 min</option>
-              <option value={30}>30 min</option>
-              <option value={60}>60 min</option>
+              {POLLING_TIMES.map((time) => (
+                <option key={time} value={time}>
+                  {time} min
+                </option>
+              ))}
             </select>
           </div>
           <div>

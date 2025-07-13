@@ -11,6 +11,8 @@ export const MODBUS_REGISTER_TYPES: ModbusRegistersTypes[] = [
   "Coils",
 ];
 
+export const POLLING_TIMES: number[] = [1, 5, 15, 30, 60];
+
 export type ModbusStatus = {
   connected: boolean;
   ip: string;
