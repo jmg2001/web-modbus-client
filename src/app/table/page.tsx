@@ -32,12 +32,11 @@ export default function TablePage() {
             modbusState.data.at(-1).values.map((value, i) => (
               <div
                 key={i}
-                className=" gap-3 text-lg flex p-2 bg-[#243347] border-2 border-[#4d6889] rounded-lg justify-between items-center"
+                className=" min-w-[10rem] gap-3 text-lg flex p-2 bg-[#243347] border-2 border-[#4d6889] rounded-lg justify-between items-center"
               >
                 <h3 className="font-bold text-gray-900 whitespace-nowrap dark:text-white text-center">
-                  {(i + startRegister()).toString().padStart(4, "0")}
+                  {(i + startRegister()).toString().padStart(4, "0")} |
                 </h3>
-                <p>|</p>
                 <h4 className="">{value}</h4>
               </div>
             ))}

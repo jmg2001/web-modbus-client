@@ -1,6 +1,77 @@
 "use client";
+import { useMemo, useState } from "react";
 import Chart from "../components/Chart";
+import { useWebSocketStore } from "../stores/useWebSocketStore";
+import { ModbusData } from "../types";
 
 export default function Page() {
-  return <Chart />;
+  const [chartData, setChartData] = useState([]);
+
+  const [register, setRegister] = useState(0);
+  const [registers, setRegisters] = useState([]);
+  const [filteredData, setFilteredData] = useState<ModbusData[]>([]);
+  const [timeRange, setTimeRange] = useState([0, 0]);
+
+  const modbusRegisters = useWebSocketStore((s) => s.modbusState.registers);
+  const modbusData = useWebSocketStore((s) => s.modbusState.data);
+  const minutesRetention = useWebSocketStore((s) => s.retentionMinutes);
+
+  function filterData(data: ModbusData[]) {
+    const now = Date.now();
+    const maxAge = minutesRetention * 60 * 1000;
+    const dataFiltered = data.filter(
+      (entry) => now - entry.timestamp <= maxAge
+    );
+    return dataFiltered;
+  }
+
+  useMemo(() => {
+    setRegisters(
+      Array.from(
+        { length: modbusRegisters.length },
+        (_, i) => modbusRegisters.start + i
+      )
+    );
+    const filteredPrevData = filterData(filteredData);
+    setFilteredData([...filteredPrevData, ...modbusData]);
+  }, [modbusData]);
+
+  useMemo(() => {
+    setTimeRange([Date.now() - minutesRetention * 60 * 1000 - 2, Date.now()]);
+    setChartData(
+      filteredData.map((item) => ({
+        value: item.values[register],
+        timestamp: item.timestamp,
+      }))
+    );
+  }, [filteredData]);
+
+  return (
+    <div className="flex flex-col w-full items-center">
+      <h1 className=" text-3xl font-bold mb-20">Chart</h1>
+      {modbusData.length > 0 ? (
+        <>
+          {" "}
+          <div className=" flex items-center gap-4 mb-5">
+            <h2 className=" text-xl">
+              Select {modbusRegisters.type} Register:{" "}
+            </h2>
+            <select
+              className="p-2 border-2 border-[#4d6889] bg-[#243347] rounded-lg text-center"
+              onChange={(e) => setRegister(Number(e.target.value))}
+            >
+              {registers.map((reg, i) => (
+                <option key={i} value={i}>
+                  {reg}
+                </option>
+              ))}
+            </select>
+          </div>
+          <Chart data={chartData} timeRange={timeRange} />
+        </>
+      ) : (
+        <h3>Waiting for Data</h3>
+      )}
+    </div>
+  );
 }

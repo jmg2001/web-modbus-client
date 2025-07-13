@@ -5,10 +5,8 @@ import "./globals.css";
 import "../lib/fontawesome"; // importa la configuración
 import Sidebar from "./components/Sidebar";
 import StatusBar from "./components/StatusBar";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
 import { useWebSocketStore } from "./stores/useWebSocketStore";
-import { useModbusStore } from "./stores/useModbusStore";
-import { ModbusData } from "./types";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

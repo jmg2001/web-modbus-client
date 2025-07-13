@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   type RegisterParams,
   type PayloadConnection,
@@ -25,6 +25,7 @@ export default function Page() {
   const modbusConnected = useWebSocketStore((s) => s.modbusState.connected);
   const connectModbus = useWebSocketStore((s) => s.modbusState.connect);
   const disconnectModbus = useWebSocketStore((s) => s.modbusState.disconnect);
+  const setRetentionStore = useWebSocketStore((s) => s.setRetention);
 
   const handleConnect = async () => {
     const payload: PayloadConnection = {
@@ -45,6 +46,10 @@ export default function Page() {
     updatedRegisters[param] = value;
     setRegisters(updatedRegisters);
   };
+
+  useMemo(() => {
+    setRetentionStore(retention);
+  }, [retention]);
 
   return (
     <div className="flex flex-col items-center">
