@@ -64,7 +64,7 @@ export default function Page() {
             >
               {registers.map((reg, i) => (
                 <option key={i} value={i}>
-                  {reg}
+                  {reg.toString().padStart(4, "0")}
                 </option>
               ))}
             </select>
