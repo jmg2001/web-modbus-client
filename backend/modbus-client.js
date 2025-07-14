@@ -8,8 +8,8 @@ let sendDataInterval = null;
 let sendStatusInterval = null;
 let data = {};
 
-// Enviar ingformacion a todos los sockets
-function broadcast(payload) {
+// Enviar informacion a todos los sockets
+function SendMessageBroadcast(payload) {
   subscribers.forEach((ws) => {
     if (ws.readyState === 1) ws.send(JSON.stringify(payload));
   });
@@ -18,7 +18,7 @@ function broadcast(payload) {
 // SET Interval para enviar Status del Cliente Modbus
 function setSendStatusInterval() {
   sendStatusInterval = setInterval(() => {
-    broadcast({
+    SendMessageBroadcast({
       state: config.connection,
       data: config.memoryStore,
     });
@@ -77,7 +77,15 @@ async function connectModbus({ ip, port, interval, registers }) {
 
   config.memoryStore = {};
 
-  await client.connectTCP(ip, { port });
+  // Try Connection
+  try {
+    await client.connectTCP(ip, { port });
+  } catch (err) {
+    SendMessageBroadcast({
+      error: err,
+    });
+  }
+
   client.setID(1); // Modbus unit ID (ajustable)
 
   config.connection.connected = true;
@@ -118,8 +126,6 @@ async function connectModbus({ ip, port, interval, registers }) {
             break;
         }
 
-        // if (!config.memoryStore[key]) config.memoryStore[key] = [];
-
         config.memoryStore = [];
 
         data = {
@@ -132,7 +138,7 @@ async function connectModbus({ ip, port, interval, registers }) {
         console.error(`Error leyendo ${tag.type} ${tag.start}`, err.message);
       }
 
-      broadcast({
+      SendMessageBroadcast({
         state: config.connection,
         data: config.memoryStore,
       });

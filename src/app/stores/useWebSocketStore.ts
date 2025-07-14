@@ -1,6 +1,7 @@
 // stores/useModbusStore.ts
 import { create } from "zustand";
 import type { ModbusStatus, PayloadConnection } from "../types";
+import { toast } from "react-hot-toast";
 
 interface WebSocketState {
   socket: WebSocket | null;
@@ -22,13 +23,13 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
   connect: () => {
     let ws = null;
     try {
-      ws = new WebSocket("ws://192.168.209.1:3001");
+      ws = new WebSocket("ws://localhost:3001");
     } catch (error) {
       console.log("Error", error);
     }
 
     ws.onopen = () => {
-      console.log("🟢 WebSocket conectado");
+      toast.success("WebSocket conectado");
       set({ connected: true });
     };
 
@@ -36,17 +37,29 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
       const prevModbusState = get().modbusState;
       const msg = JSON.parse(e.data);
 
-      set(() => ({
-        modbusState: {
-          ...prevModbusState,
-          ...msg.state,
-          data: msg.data,
-        },
-      }));
+      if (msg["error"]) {
+        toast.error(msg.error.code);
+      } else {
+        if (!get().modbusState.connected && msg.state.connected)
+          toast.success("ModBus Client Connected");
+        if (get().modbusState.connected && !msg.state.connected)
+          toast("ModBus Client Disconnected", {
+            icon: "🔌",
+          });
+        set(() => ({
+          modbusState: {
+            ...prevModbusState,
+            ...msg.state,
+            data: msg.data,
+          },
+        }));
+      }
     };
 
     ws.onclose = () => {
-      console.log("🔴 WebSocket cerrado");
+      toast("Web Socket Closed", {
+        icon: "🔌",
+      });
       set({ socket: null });
       set({ connected: false });
     };
@@ -60,7 +73,6 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
     }
     set({ socket: null });
   },
-
   modbusState: {
     connected: false,
     data: [],
@@ -72,7 +84,6 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
       try {
         get().socket.send(JSON.stringify(payload));
       } catch (error) {
-        console.error("🚨 Error al conectar:", error);
         return error;
       }
     },
