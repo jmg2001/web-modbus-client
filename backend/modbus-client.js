@@ -70,13 +70,6 @@ async function connectModbus({ ip, port, interval, registers }) {
   if (sendStatusInterval) clearInterval(sendStatusInterval);
   if (config.connection.connected) closeClient();
 
-  config.connection = {
-    ip,
-    port,
-    interval,
-    registers,
-  };
-
   config.memoryStore = {};
 
   // Try Connection
@@ -86,12 +79,22 @@ async function connectModbus({ ip, port, interval, registers }) {
     SendMessageBroadcast({
       error: err,
     });
+    setSendStatusInterval();
+    return;
   }
 
   client.setID(1); // Modbus unit ID (ajustable)
 
   config.connection.connected = true;
   console.log("✅ Cliente Modbus conectado correctamente");
+
+  config.connection = {
+    ip,
+    port,
+    interval,
+    registers,
+    connected: true,
+  };
 
   sendDataInterval = setInterval(async () => {
     if (subscribers.length > 0) {
@@ -135,9 +138,12 @@ async function connectModbus({ ip, port, interval, registers }) {
           timestamp: now,
         };
 
-        config.memoryStore.push(data);
+        config.memoryStore = data;
       } catch (err) {
-        console.error(`Error leyendo ${tag.type} ${tag.start}`, err.message);
+        console.error(
+          `Error leyendo ${registers.type} ${registers.start}`,
+          err.message
+        );
       }
 
       SendMessageBroadcast({

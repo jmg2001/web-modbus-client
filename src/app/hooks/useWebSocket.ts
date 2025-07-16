@@ -1,29 +1,28 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useModbusStore } from "../stores/useModbusStore";
+import { PayloadConnection } from "../types";
 
 export function useWebSocket(url) {
   const wsRef = useRef(null);
   const addModbusData = useModbusStore((s) => s.addModbusData);
   const setClientStatus = useModbusStore((s) => s.setClientStatus);
-  const setModbusIsConnected = useModbusStore((s) => s.setIsConnected);
+  const setModbusRetentionMinutes = useModbusStore(
+    (s) => s.setRetentionMinutes
+  );
   const [connected, setConnected] = useState(false);
 
-  const connectModbus = useCallback(() => {
-    console.log("Connecting");
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(
-        JSON.stringify({
-          ip: "localhost",
-          port: 502,
-          interval: 1000,
-          registers: { type: "Holding", start: 0, length: 2 },
-        })
-      );
-      console.warn("CMODBUS connnected");
-    } else {
-      console.warn("WebSocket not open, cannot send connect message.");
-    }
-  }, []);
+  const connectModbus = useCallback(
+    (payload: PayloadConnection, minutes: number) => {
+      console.log("Connecting");
+      setModbusRetentionMinutes(minutes);
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify(payload));
+      } else {
+        console.warn("WebSocket not open, cannot send connect message.");
+      }
+    },
+    []
+  );
 
   const connect = useCallback(() => {
     const ws = new WebSocket(url);
@@ -36,7 +35,11 @@ export function useWebSocket(url) {
 
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
-      if (msg.data.length > 0) addModbusData(msg.data);
+      if (msg.error) {
+        console.log(msg.error);
+        return;
+      }
+      if (Object.keys(msg.data).length > 0) addModbusData(msg.data);
       setClientStatus(msg.status);
     };
 
@@ -57,5 +60,6 @@ export function useWebSocket(url) {
 
   return {
     connectModbus,
+    connected,
   };
 }

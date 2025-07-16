@@ -17,7 +17,7 @@ export type ModbusStatus = {
   connected: boolean;
   ip: string;
   port: number;
-  registers: RegisterParams;
+  registers: ModbusRegisterParams;
   interval: number;
   data: ModbusData[];
   connect: (payload: PayloadConnection) => string;
@@ -28,10 +28,10 @@ export type PayloadConnection = {
   ip: string;
   port: number;
   interval: number;
-  registers: RegisterParams;
+  registers: ModbusRegisterParams;
 };
 
-export type RegisterParams = {
+export type ModbusRegisterParams = {
   type: ModbusRegistersTypes;
   start: number;
   length: number;

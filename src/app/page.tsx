@@ -1,5 +1,4 @@
 "use client";
-import { useEffect } from "react";
 import { useWebSocket } from "./hooks/useWebSocket";
 
 export default function Home() {
@@ -7,7 +6,21 @@ export default function Home() {
 
   return (
     <div className=" grid place-content-center mt-6 grid-cols-1 justify-items-center gap-2">
-      <button onClick={() => connectModbus()}>Click</button>
+      <button
+        onClick={() =>
+          connectModbus(
+            {
+              ip: "localhost",
+              interval: 1000,
+              port: 502,
+              registers: { type: "Holding", length: 2, start: 0 },
+            },
+            0.25
+          )
+        }
+      >
+        Click
+      </button>
       {/* <h1 className=" text-4xl font-bold">Welcome to Modbus TCP Web Client</h1>
       <p className=" mt-10 text-xl">
         This a web tool for test Modbus TCP Servers and visualize the results in
