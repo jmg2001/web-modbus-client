@@ -43,7 +43,9 @@ function registerWebSocketClient(ws) {
           closeClient();
           break;
         default:
+          console.log(text);
           const obj = JSON.parse(text);
+
           try {
             await connectModbus(obj);
           } catch (err) {

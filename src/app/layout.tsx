@@ -7,7 +7,7 @@ import Sidebar from "./components/Sidebar";
 import StatusBar from "./components/StatusBar";
 import { useEffect } from "react";
 import { useWebSocketStore } from "./stores/useWebSocketStore";
-import { Toaster } from "react-hot-toast";
+//import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,10 +24,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const connectSocket = useWebSocketStore((s) => s.connect);
-  useEffect(() => {
-    connectSocket();
-  });
+  // const connectSocket = useWebSocketStore((s) => s.connect);
+  // useEffect(() => {
+  //   connectSocket();
+  // });
 
   return (
     <html lang="en">
@@ -41,7 +41,7 @@ export default function RootLayout({
           </main>
           <StatusBar />
         </div>
-        <Toaster position="top-right" reverseOrder={false} />
+        {/* <Toaster position="top-right" reverseOrder={false} /> */}
       </body>
     </html>
   );

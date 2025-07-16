@@ -8,6 +8,7 @@ import {
   Tooltip,
 } from "recharts";
 import { ModbusData } from "../types";
+import { useModbusStore } from "../stores/useModbusStore";
 
 type ChartProps = {
   data: ModbusData[];
@@ -15,9 +16,11 @@ type ChartProps = {
 };
 
 export default function Chart({ data, timeRange }: ChartProps) {
+  const dataBuffer = useModbusStore((s) => s.dataBuffer);
+  console.log("buffer", dataBuffer);
   return (
     <>
-      <LineChart width={800} height={400} data={data}>
+      <LineChart width={800} height={400} data={dataBuffer}>
         <CartesianGrid />
         <Line dataKey="value" isAnimationActive={false} />
         <XAxis

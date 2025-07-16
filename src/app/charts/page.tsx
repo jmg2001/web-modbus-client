@@ -51,7 +51,7 @@ export default function Page() {
   return (
     <div className="flex flex-col w-full items-center">
       <h1 className=" text-3xl font-bold mb-15">Chart</h1>
-      {modbusData.length > 0 ? (
+      {modbusData.length > -1 ? (
         <>
           {" "}
           <div className=" flex items-center gap-4 mb-3">

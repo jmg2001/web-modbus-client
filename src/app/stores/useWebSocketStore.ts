@@ -1,7 +1,7 @@
 // stores/useModbusStore.ts
 import { create } from "zustand";
 import type { ModbusStatus, PayloadConnection } from "../types";
-import { toast } from "react-hot-toast";
+// import { toast } from "react-hot-toast";
 
 interface WebSocketState {
   socket: WebSocket | null;
@@ -29,7 +29,7 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
     }
 
     ws.onopen = () => {
-      toast.success("WebSocket conectado");
+      // toast.success("WebSocket conectado");
       set({ connected: true });
     };
 
@@ -38,28 +38,28 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
       const msg = JSON.parse(e.data);
 
       if (msg["error"]) {
-        toast.error(msg.error.code);
+        // toast.error(msg.error.code);
       } else {
         if (!get().modbusState.connected && msg.state.connected)
-          toast.success("ModBus Client Connected");
-        if (get().modbusState.connected && !msg.state.connected)
-          toast("ModBus Client Disconnected", {
-            icon: "🔌",
-          });
-        set(() => ({
-          modbusState: {
-            ...prevModbusState,
-            ...msg.state,
-            data: msg.data,
-          },
-        }));
+          if (get().modbusState.connected && !msg.state.connected)
+            // toast.success("ModBus Client Connected");
+            // toast("ModBus Client Disconnected", {
+            //   icon: "🔌",
+            // });
+            set(() => ({
+              modbusState: {
+                ...prevModbusState,
+                ...msg.state,
+                data: msg.data,
+              },
+            }));
       }
     };
 
     ws.onclose = () => {
-      toast("Web Socket Closed", {
-        icon: "🔌",
-      });
+      // toast("Web Socket Closed", {
+      //   icon: "🔌",
+      // });
       set({ socket: null });
       set({ connected: false });
     };
