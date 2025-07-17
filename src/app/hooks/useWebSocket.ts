@@ -1,6 +1,7 @@
 import { useRef, useCallback, useState } from "react";
 import { useModbusStore } from "../stores/useModbusStore";
 import { PayloadConnection } from "../types";
+import toast from "react-hot-toast";
 
 export function useWebSocket() {
   const wsRef = useRef(null);
@@ -16,7 +17,6 @@ export function useWebSocket() {
 
   const connectModbus = useCallback(
     (payload: PayloadConnection, minutes: number) => {
-      console.log("Connecting");
       setModbusRetentionMinutes(minutes);
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify(payload));
@@ -41,14 +41,14 @@ export function useWebSocket() {
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log("WebSocket connected");
+      toast.success("WebSocket connected");
       setConnected(true);
     };
 
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
       if (msg.error) {
-        console.log(msg.error);
+        toast.error(msg.error.code);
         return;
       }
       if (Object.keys(msg.data).length > 0) addModbusData(msg.data);
@@ -56,6 +56,7 @@ export function useWebSocket() {
     };
 
     ws.onclose = () => {
+      toast.custom("WebSocket connected");
       setConnected(false);
       setTimeout(() => connect(url), 3000);
     };

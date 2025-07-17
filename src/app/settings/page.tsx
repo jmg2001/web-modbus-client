@@ -10,6 +10,12 @@ import {
 import { useSharedWebSocket } from "../context/useWebSocketContext";
 
 export default function Page() {
+  const initRegisters: ModbusRegisterParams = {
+    type: "Holding",
+    length: 5,
+    start: 0,
+  };
+
   const { modbusStatus, connectModbus, disconnectModbus } =
     useSharedWebSocket();
 
@@ -18,9 +24,8 @@ export default function Page() {
   const [interval, setInterval] = useState(1000);
   const [retention, setRetention] = useState(1); // en minutos
 
-  const [registers, setRegisters] = useState<ModbusRegisterParams>(
-    modbusStatus.registers
-  );
+  const [registers, setRegisters] =
+    useState<ModbusRegisterParams>(initRegisters);
 
   const handleConnect = async () => {
     const payload: PayloadConnection = {
@@ -44,10 +49,14 @@ export default function Page() {
 
   return (
     <div className="flex flex-col items-center">
-      <h1 className="text-4xl font-bold text-center mb-15">
-        Modbus Configuration
-      </h1>
-      <div className="">
+      <h1 className="text-4xl font-bold text-center mb-15">Modbus Settings</h1>
+      <p className=" w-4xl text-center">
+        Configure Modbus TCP client parameters including server IP address,
+        port, polling interval and register mappings. This section also allows
+        you to define which tags (addresses) to monitor, set data retention
+        intervals, and manage connection status.
+      </p>
+      <div className=" mt-10">
         <form
           className={`text-xl flex flex-col gap-4 w-xl items-left ${
             modbusStatus.connected ? "pointer-events-none opacity-50" : ""

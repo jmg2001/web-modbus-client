@@ -7,7 +7,12 @@ export default function TablePage() {
   return (
     <section className=" flex  h-full flex-col items-center">
       <h1 className="text-4xl font-bold mb-10">Table</h1>
-
+      <p className="  w-4xl text-center mb-10">
+        Tabular display of live Modbus data. Ideal for monitoring multiple
+        registers simultaneously with precision. Values update in real time
+        based on the configured polling frequency and provide a clear,
+        structured view of all active tags.
+      </p>
       {modbusDataBuffer.length > 0 ? (
         <>
           <div className=" flex items-center gap-4 mb-10">

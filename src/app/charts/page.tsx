@@ -42,14 +42,18 @@ export default function Page() {
 
   return (
     <div className="flex flex-col w-full items-center">
-      <h1 className=" text-3xl font-bold mb-15">Chart</h1>
+      <h1 className=" text-3xl font-bold mb-10">Chart</h1>
+      <p className="  w-4xl text-center mb-10">
+        Real-time data visualization through dynamic charts. This module helps
+        identify trends, fluctuations, and anomalies in Modbus register values,
+        supporting performance monitoring and diagnostics of connected devices
+        or systems.
+      </p>
       {modbusDataBuffer.length > 0 ? (
         <>
           {" "}
           <div className=" flex items-center gap-4 mb-3">
-            <h2 className=" text-xl">
-              Select {modbusStatus.registers.type} Register:{" "}
-            </h2>
+            <h2>Select {modbusStatus.registers.type} Register: </h2>
             <select
               className="p-2 border-2 border-[#4d6889] bg-[#243347] rounded-lg text-center"
               onChange={(e) => setRegister(Number(e.target.value))}
@@ -60,6 +64,22 @@ export default function Page() {
                 </option>
               ))}
             </select>
+            <div className="flex gap-3 items-center">
+              <h2>Range: </h2>
+              <select
+                className="p-2 border-2 border-[#4d6889] bg-[#243347] rounded-lg text-center"
+                value={minutesViewRange}
+                onChange={(e) => setMinutesViewRange(Number(e.target.value))}
+              >
+                {pollingTimes
+                  .filter((time) => time <= modbusRetentionMinutes)
+                  .map((time) => (
+                    <option key={time} value={time}>
+                      {time} min
+                    </option>
+                  ))}
+              </select>
+            </div>
             <p
               className={`${
                 modbusStatus.connected ? "text-lime-500" : "text-red-400"
@@ -69,22 +89,6 @@ export default function Page() {
             </p>
           </div>
           <Chart data={chartData} timeRange={timeRange} />
-          <div className="flex gap-3 items-center">
-            <h3>Range: </h3>
-            <select
-              className="p-2 border-2 border-[#4d6889] bg-[#243347] rounded-lg text-center"
-              value={minutesViewRange}
-              onChange={(e) => setMinutesViewRange(Number(e.target.value))}
-            >
-              {pollingTimes
-                .filter((time) => time <= modbusRetentionMinutes)
-                .map((time) => (
-                  <option key={time} value={time}>
-                    {time} min
-                  </option>
-                ))}
-            </select>
-          </div>
         </>
       ) : (
         <h3>Waiting for Data</h3>
