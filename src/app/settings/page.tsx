@@ -1,32 +1,26 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
-  type RegisterParams,
+  type ModbusRegisterParams,
   type PayloadConnection,
   MODBUS_REGISTER_TYPES,
   POLLING_TIMES,
 } from "../types";
-import { useWebSocketStore } from "../stores/useWebSocketStore";
+import { useSharedWebSocket } from "../context/useWebSocketContext";
 
 export default function Page() {
-  const initRegister: RegisterParams = {
-    type: "Holding",
-    length: 5,
-    start: 0,
-  };
+  const { modbusStatus, connectModbus, disconnectModbus } =
+    useSharedWebSocket();
 
   const [ip, setIp] = useState("localhost");
   const [port, setPort] = useState(502);
   const [interval, setInterval] = useState(1000);
   const [retention, setRetention] = useState(1); // en minutos
 
-  const [registers, setRegisters] = useState<RegisterParams>(initRegister);
-
-  const modbusConnected = useWebSocketStore((s) => s.modbusState.connected);
-  const connectModbus = useWebSocketStore((s) => s.modbusState.connect);
-  const disconnectModbus = useWebSocketStore((s) => s.modbusState.disconnect);
-  const setRetentionStore = useWebSocketStore((s) => s.setRetention);
+  const [registers, setRegisters] = useState<ModbusRegisterParams>(
+    modbusStatus.registers
+  );
 
   const handleConnect = async () => {
     const payload: PayloadConnection = {
@@ -35,7 +29,7 @@ export default function Page() {
       interval: Number(interval),
       registers: registers,
     };
-    connectModbus(payload);
+    connectModbus(payload, retention);
   };
 
   const handleDisconnect = async () => {
@@ -48,10 +42,6 @@ export default function Page() {
     setRegisters(updatedRegisters);
   };
 
-  useMemo(() => {
-    setRetentionStore(retention);
-  }, [retention]);
-
   return (
     <div className="flex flex-col items-center">
       <h1 className="text-4xl font-bold text-center mb-15">
@@ -60,7 +50,7 @@ export default function Page() {
       <div className="">
         <form
           className={`text-xl flex flex-col gap-4 w-xl items-left ${
-            modbusConnected ? "pointer-events-none opacity-50" : ""
+            modbusStatus.connected ? "pointer-events-none opacity-50" : ""
           }`}
           action=""
         >
@@ -144,14 +134,14 @@ export default function Page() {
         </form>
 
         <button
-          onClick={modbusConnected ? handleDisconnect : handleConnect}
+          onClick={modbusStatus.connected ? handleDisconnect : handleConnect}
           className={`w-full ${
-            modbusConnected
+            modbusStatus.connected
               ? "bg-red-700 hover:bg-red-700/70"
               : "bg-lime-700 hover:bg-lime-700/70"
           } text-white py-2 rounded mt-4 transition-colors ease-in font-bold uppercase`}
         >
-          {modbusConnected ? "Disconnect" : "Connect"}
+          {modbusStatus.connected ? "Disconnect" : "Connect"}
         </button>
       </div>
     </div>

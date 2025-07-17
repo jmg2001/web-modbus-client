@@ -5,9 +5,8 @@ import "./globals.css";
 import "../lib/fontawesome"; // importa la configuración
 import Sidebar from "./components/Sidebar";
 import StatusBar from "./components/StatusBar";
-import { useEffect } from "react";
-import { useWebSocketStore } from "./stores/useWebSocketStore";
-//import { Toaster } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
+import { WebSocketProvider } from "./context/useWebSocketContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,24 +23,21 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // const connectSocket = useWebSocketStore((s) => s.connect);
-  // useEffect(() => {
-  //   connectSocket();
-  // });
-
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="flex h-screen">
-          <Sidebar />
-          <main className="flex-1 overflow-y-auto p-6 bg-[#121921]">
-            {children}
-          </main>
-          <StatusBar />
-        </div>
-        {/* <Toaster position="top-right" reverseOrder={false} /> */}
+        <WebSocketProvider>
+          <div className="flex h-screen">
+            <Sidebar />
+            <main className="flex-1 overflow-y-auto p-6 bg-[#121921]">
+              {children}
+            </main>
+            <StatusBar />
+          </div>
+          <Toaster position="top-right" reverseOrder={false} />
+        </WebSocketProvider>
       </body>
     </html>
   );

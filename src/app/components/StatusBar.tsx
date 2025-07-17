@@ -1,21 +1,26 @@
 "use client";
-import { useWebSocketStore } from "../stores/useWebSocketStore";
+import { useEffect } from "react";
+import { useSharedWebSocket } from "../context/useWebSocketContext";
 
 export default function StatusBar() {
-  const webSocketStoreConnected = useWebSocketStore((s) => s.connected);
-  const modbusState = useWebSocketStore((s) => s.modbusState);
+  const { connect, connected, modbusStatus, modbusDataBuffer } =
+    useSharedWebSocket();
+
+  useEffect(() => {
+    connect("http://localhost:3001");
+  }, []);
 
   return (
     <div className=" p-2 flex justify-between absolute bottom-0 z-50 bg-[#0b0f14] w-full font-bold">
       <div className="flex gap-5">
-        <span>WS Status: {webSocketStoreConnected ? "🟢" : "🔴"}</span>
-        <span>MB Status: {modbusState.connected ? "🟢" : "🔴"}</span>
-        <span>IP: {modbusState.ip ? modbusState.ip : "na"}</span>
-        <span>Port: {modbusState.port ? modbusState.port : "na"}</span>
+        <span>WS Status: {connected ? "🟢" : "🔴"}</span>
+        <span>MB Status: {modbusStatus.connected ? "🟢" : "🔴"}</span>
+        <span>IP: {modbusStatus.ip ? modbusStatus.ip : "na"}</span>
+        <span>Port: {modbusStatus.port ? modbusStatus.port : "na"}</span>
       </div>
       <span className=" flex gap-4">
         <p>Data Length: </p>
-        {modbusState.data && <p>{modbusState.data.length}</p>}
+        <p>{modbusDataBuffer.length}</p>
       </span>
     </div>
   );

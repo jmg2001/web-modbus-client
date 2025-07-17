@@ -16,7 +16,7 @@ const links = [
   { href: "/charts", label: "Charts", icon: faChartArea },
   { href: "/table", label: "Table", icon: faTable },
   { href: "/settings", label: "Settings", icon: faGear },
-  { href: "/logs", label: "Logs", icon: faClipboard },
+  // { href: "/logs", label: "Logs", icon: faClipboard },
 ];
 
 export default function Sidebar() {

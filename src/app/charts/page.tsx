@@ -1,62 +1,54 @@
 "use client";
 import { useMemo, useState } from "react";
 import Chart from "../components/Chart";
-import { useWebSocketStore } from "../stores/useWebSocketStore";
-import { ModbusData, POLLING_TIMES } from "../types";
+import { POLLING_TIMES } from "../types";
+import { useSharedWebSocket } from "../context/useWebSocketContext";
 
 export default function Page() {
-  const modbusRegisters = useWebSocketStore((s) => s.modbusState.registers);
-  const modbusData = useWebSocketStore((s) => s.modbusState.data);
-  const minutesRetention = useWebSocketStore((s) => s.retentionMinutes);
+  const { modbusDataBuffer, modbusStatus, modbusRetentionMinutes } =
+    useSharedWebSocket();
 
   const [chartData, setChartData] = useState([]);
   const [register, setRegister] = useState(0);
   const [registers, setRegisters] = useState([]);
-  const [filteredData, setFilteredData] = useState<ModbusData[]>([]);
   const [timeRange, setTimeRange] = useState([0, 0]);
-  const [minutesViewRange, setMinutesViewRange] = useState(minutesRetention);
+  const [minutesViewRange, setMinutesViewRange] = useState(
+    modbusRetentionMinutes
+  );
 
   const pollingTimes = POLLING_TIMES;
-
-  function filterData(data: ModbusData[]) {
-    const now = Date.now();
-    const maxAge = minutesRetention * 60 * 1000;
-    const dataFiltered = data.filter(
-      (entry) => now - entry.timestamp <= maxAge
-    );
-    return dataFiltered;
-  }
 
   useMemo(() => {
     setRegisters(
       Array.from(
-        { length: modbusRegisters.length },
-        (_, i) => modbusRegisters.start + i
+        { length: modbusStatus.registers.length },
+        (_, i) => modbusStatus.registers.start + i
       )
     );
-    const filteredPrevData = filterData(filteredData);
-    setFilteredData([...filteredPrevData, ...modbusData]);
-  }, [modbusData]);
+  }, [modbusStatus.registers]);
 
   useMemo(() => {
-    setTimeRange([Date.now() - minutesViewRange * 60 * 1000 - 2, Date.now()]);
+    console.log(
+      new Date(Date.now() - minutesViewRange * 60 * 1000).toLocaleTimeString()
+    );
+    setTimeRange([Date.now() - minutesViewRange * 60 * 1000, Date.now()]);
     setChartData(
-      filteredData.map((item) => ({
+      modbusDataBuffer.map((item) => ({
         value: item.values[register],
         timestamp: item.timestamp,
       }))
     );
-  }, [filteredData]);
+  }, [modbusDataBuffer, minutesViewRange]);
 
   return (
     <div className="flex flex-col w-full items-center">
       <h1 className=" text-3xl font-bold mb-15">Chart</h1>
-      {modbusData.length > -1 ? (
+      {modbusDataBuffer.length > 0 ? (
         <>
           {" "}
           <div className=" flex items-center gap-4 mb-3">
             <h2 className=" text-xl">
-              Select {modbusRegisters.type} Register:{" "}
+              Select {modbusStatus.registers.type} Register:{" "}
             </h2>
             <select
               className="p-2 border-2 border-[#4d6889] bg-[#243347] rounded-lg text-center"
@@ -68,6 +60,13 @@ export default function Page() {
                 </option>
               ))}
             </select>
+            <p
+              className={`${
+                modbusStatus.connected ? "text-lime-500" : "text-red-400"
+              }`}
+            >
+              {modbusStatus.connected ? "ONLINE" : "OFFLINE"}
+            </p>
           </div>
           <Chart data={chartData} timeRange={timeRange} />
           <div className="flex gap-3 items-center">
@@ -78,7 +77,7 @@ export default function Page() {
               onChange={(e) => setMinutesViewRange(Number(e.target.value))}
             >
               {pollingTimes
-                .filter((time) => time <= minutesRetention)
+                .filter((time) => time <= modbusRetentionMinutes)
                 .map((time) => (
                   <option key={time} value={time}>
                     {time} min

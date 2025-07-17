@@ -1,11 +1,14 @@
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState } from "react";
 import { useModbusStore } from "../stores/useModbusStore";
 import { PayloadConnection } from "../types";
 
-export function useWebSocket(url) {
+export function useWebSocket() {
   const wsRef = useRef(null);
   const addModbusData = useModbusStore((s) => s.addModbusData);
   const setClientStatus = useModbusStore((s) => s.setClientStatus);
+  const modbusStatus = useModbusStore((s) => s.clientStatus);
+  const modbusDataBuffer = useModbusStore((s) => s.dataBuffer);
+  const modbusRetentionMinutes = useModbusStore((s) => s.retentionMinutes);
   const setModbusRetentionMinutes = useModbusStore(
     (s) => s.setRetentionMinutes
   );
@@ -24,7 +27,16 @@ export function useWebSocket(url) {
     []
   );
 
-  const connect = useCallback(() => {
+  const disconnectModbus = useCallback(() => {
+    console.log("Disconnecting");
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send("DISCONNECT");
+    } else {
+      console.warn("WebSocket not open, cannot send connect message.");
+    }
+  }, []);
+
+  const connect = (url) => {
     const ws = new WebSocket(url);
     wsRef.current = ws;
 
@@ -40,26 +52,28 @@ export function useWebSocket(url) {
         return;
       }
       if (Object.keys(msg.data).length > 0) addModbusData(msg.data);
-      setClientStatus(msg.status);
+      setClientStatus(msg.state);
     };
 
     ws.onclose = () => {
       setConnected(false);
-      setTimeout(() => connect(), 3000);
+      setTimeout(() => connect(url), 3000);
     };
 
     ws.onerror = (err) => {
       console.error("WebSocket error", err);
       ws.close();
     };
-  }, [url]);
-
-  useEffect(() => {
-    connect();
-  }, [connect]);
+  };
 
   return {
+    modbusStatus,
+    modbusDataBuffer,
     connectModbus,
     connected,
+    connect,
+    setModbusRetentionMinutes,
+    modbusRetentionMinutes,
+    disconnectModbus,
   };
 }
