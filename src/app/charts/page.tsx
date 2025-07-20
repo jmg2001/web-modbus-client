@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Chart from "../components/Chart";
 import { POLLING_TIMES } from "../types";
 import { useSharedWebSocket } from "../context/useWebSocketContext";
@@ -18,7 +18,7 @@ export default function Page() {
 
   const pollingTimes = POLLING_TIMES;
 
-  useMemo(() => {
+  useEffect(() => {
     setRegisters(
       Array.from(
         { length: modbusStatus.registers.length },
