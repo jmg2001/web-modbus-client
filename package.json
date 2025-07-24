@@ -1,38 +1,22 @@
 {
-  "name": "web-opc-ua-client",
-  "version": "0.1.0",
-  "private": true,
+  "name": "web-modbus-client-migration",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "nodemon server/index.js",
+    "start": "node server/index.js"
   },
+  "author": "",
+  "license": "ISC",
+  "description": "",
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.7.2",
-    "@fortawesome/free-solid-svg-icons": "^6.7.2",
-    "@fortawesome/react-fontawesome": "^0.2.2",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "modbus-serial": "^8.0.21-no-serial-port",
-    "next": "15.3.5",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-hot-toast": "^2.5.2",
-    "react-toastify": "^11.0.5",
-    "recharts": "^3.1.0",
-    "ws": "^8.18.3",
-    "zustand": "^5.0.6"
+    "ws": "^8.18.3"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.5",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "nodemon": "^3.1.10"
   }
 }
