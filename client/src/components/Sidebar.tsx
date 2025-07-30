@@ -20,7 +20,7 @@ export default function Sidebar() {
   return (
     <aside className="w-fit">
       <nav className=" px-5 bg-[#121921] h-full flex flex-col gap-3 pt-4 text-lg w-[20vw] ">
-        <div className="">Logo</div>
+        <div className=" text-center">Modbus Web Client</div>
         {links.map(({ href, label, icon }) => (
           <Link
             key={href}
