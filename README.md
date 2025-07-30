@@ -1,6 +1,6 @@
 # 🧠 Modbus TCP Web Client
 
-Este proyecto es una API backend con **Express** y **TypeScript** que actúa como cliente **Modbus** (TCP o RTU) y expone los datos vía **WebSocket** para ser consumidos por una aplicación React.
+Este proyecto es una API backend con **Express** y **TypeScript** que actúa como cliente **Modbus** TCP y expone los datos vía **WebSocket** para ser consumidos por una aplicación React.
 
 ## 🚀 Características
 
